@@ -8,16 +8,15 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <signal.h>
-#include <sys/wait.h>
 
 #define PORT 8080
 #define BUFFER_SIZE 1024
 
 // Signal handler to prevent zombie processes
-// void sigchld_handler(int sig) {
-//     (void)sig; // Ignore unused parameter warning
-//     while (waitpid(-1, NULL, WNOHANG) > 0);
-// }
+void sigchld_handler(int sig) {
+    (void)sig; // Ignore unused parameter warning
+    while (waitpid(-1, NULL, WNOHANG) > 0);
+}
 
 void handle_client(int connfd) {
     char buffer[BUFFER_SIZE];
@@ -74,11 +73,9 @@ int main() {
     }
 
     // Handle SIGCHLD to prevent zombie processes
-    // signal(SIGCHLD, sigchld_handler);
+    signal(SIGCHLD, sigchld_handler);
 
     printf("Server is listening on port %d...\n", PORT);
-
-    int status;
 
     // Server loop to accept multiple clients
     while (1) {
@@ -96,7 +93,6 @@ int main() {
             close(connfd);
         } else if (pid == 0) {
             // Child process: handle the client
-            printf("This is the child process. My PID is %d.\n", getpid());
             close(listenfd);  // Close the listening socket in the child process
             handle_client(connfd);
             close(connfd);
@@ -104,11 +100,6 @@ int main() {
         } else {
             // Parent process: continue accepting new clients
             close(connfd);  // Close the client socket in the parent process
-            sleep(100);
-            pid = wait(&status);
-    if (WIFEXITED(status))
-        fprintf(stderr, "\n\t[%d]\tProcess %d exited with status %d.\n",
-                (int) getpid(), pid, WEXITSTATUS(status));
         }
     }
 
