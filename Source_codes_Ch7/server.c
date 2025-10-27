@@ -10,6 +10,7 @@
 int check_winner(int board[3][3]);
 void send_state_update(int client1, int client2, int board[3][3]);
 void notify_turn(int client_sock, int player_num);
+void notify_turn_error(int client_sock, int player_num);
 
 int main()
 {
@@ -80,6 +81,11 @@ int main()
                 // Đổi lượt
                 current_player = (current_player == 1) ? 2 : 1;
             }
+            else
+            {
+                notify_turn_error(clients[current_player - 1], current_player);
+                continue;
+            }
         }
     }
 
@@ -95,6 +101,15 @@ void notify_turn(int client_sock, int player_num)
 {
     char buffer[BUFFER_SIZE] = {0};
     buffer[0] = 0x05;
+    buffer[1] = player_num;
+    send(client_sock, buffer, BUFFER_SIZE, 0);
+}
+
+// Gửi thông báo lỗi
+void notify_turn_error(int client_sock, int player_num)
+{
+    char buffer[BUFFER_SIZE] = {0};
+    buffer[0] = 0x06;
     buffer[1] = player_num;
     send(client_sock, buffer, BUFFER_SIZE, 0);
 }

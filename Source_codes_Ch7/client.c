@@ -69,6 +69,10 @@ int main()
                 printf("Người chơi %d thắng!\n", result);
             break;
         }
+        else if (buffer[0] == 0x06)
+        {
+            printf("Bạn đã nhập ô không hợp lệ. Vui lòng nhập lại!\n");
+        }
     }
 
     close(tcp_sock);
